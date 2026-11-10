@@ -232,7 +232,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
 const store={get(k,d){try{const v=localStorage.getItem('gostop.'+k);return v?JSON.parse(v):d}catch(e){return d}},
   set(k,v){try{localStorage.setItem('gostop.'+k,JSON.stringify(v))}catch(e){}}};
 const DEF_SET={bonus:true,bonusArt:['rabbit','panda','dragon'],jeom:100,start:10000,goDouble:true,pibak:true,pibakN:5,gwangbak:true,gobak:true,meongbak:false,
-  gukjin:'auto',shake:true,bomb:true,chongtong:true,steal:true,nagari:true,gwangVal:1,refills:3,labels:true,speed:1};
+  gukjin:'auto',shake:true,bomb:true,chongtong:true,steal:true,nagari:true,gwangVal:1,refills:3,labels:true,speed:1,firstSsa:5,yeonSsa:10,threeSsa:true,sound:true};
 let SET=Object.assign({},DEF_SET,store.get('set',{}));
 let PROG=Object.assign({months:[],quizBest:0,helpWins:0,realWins:0,settleRight:0,seen:{}},store.get('prog',{}));
 let SESS=store.get('sess',null);
@@ -258,7 +258,7 @@ const DECK=[];
   add(10,'yeol');add(10,'tti',{sub:'cheong'});add(10,'pi',{val:1});add(10,'pi',{val:1});
   add(11,'gwang');add(11,'pi',{val:2});add(11,'pi',{val:1});add(11,'pi',{val:1});
   add(12,'gwang',{bi:1});add(12,'yeol');add(12,'tti',{sub:'bi'});add(12,'pi',{val:2});
-  add(13,'pi',{val:2,bonus:1});add(13,'pi',{val:2,bonus:1});add(13,'pi',{val:3,bonus:1});
+  add(13,'pi',{val:2,bonus:1});add(13,'pi',{val:2,bonus:1});add(13,'pi',{val:2,bonus:1});
 })();
 function kind(c){ if(c.t==='gwang')return c.bi?'비광':'광'; if(c.t==='yeol')return c.gukjin?'국진':'열끗';
   if(c.t==='tti')return {hong:'홍단',cheong:'청단',cho:'초단',bi:'띠'}[c.sub]; return c.val===3?'쓰리피':c.val===2?'쌍피':'피'}
@@ -322,6 +322,25 @@ let G=null;
 const NAMES={2:['할머니봇'],3:['할머니봇','삼촌봇'],4:['할머니봇','삼촌봇','이모봇']};
 const FACE={'나':'나','할머니봇':'할','삼촌봇':'삼','이모봇':'이'};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+// ───── 효과음: 소리 파일 없이 Web Audio로 만든다 ─────
+let AC=null;const NZ={};
+function ac(){try{if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AC=new C()}if(AC.state!=='running')AC.resume();return AC}catch(e){return null}}
+['touchend','pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{const a=ac();if(a&&!a._u){const s=a.createBufferSource();s.buffer=a.createBuffer(1,1,22050);s.connect(a.destination);s.start(0);a._u=1}},{passive:true}));
+function noise(a,t,dur,freq,vol){const k=dur;let b=NZ[k];if(!b){b=a.createBuffer(1,Math.ceil(a.sampleRate*dur),a.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,5);NZ[k]=b}
+  const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=freq;g.gain.value=vol;s.connect(f);f.connect(g);g.connect(a.destination);s.start(t)}
+function tone(a,t,fr,dur,vol,type){const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.value=fr;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.015);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+0.05)}
+function sfx(k){if(!k||!SET.sound||(G&&G.fast))return;const a=ac();if(!a)return;try{const t=a.currentTime+0.02;
+  if(k==='slap'){noise(a,t,0.14,2200,1);tone(a,t,120,0.09,0.5,'triangle')}
+  else if(k==='slapSoft'){noise(a,t,0.12,1800,0.7);tone(a,t,130,0.07,0.3,'triangle')}
+  else if(k==='flip'){noise(a,t,0.07,5000,0.45)}
+  else if(k==='take'){noise(a,t,0.1,2600,0.7);noise(a,t+0.1,0.1,2600,0.55)}
+  else if(k==='tick'){tone(a,t,988,0.12,0.12)}
+  else if(k==='event'){[660,880,1320].forEach((f,i)=>tone(a,t+i*0.09,f,0.28,0.22))}
+  else if(k==='go'){[523,659,784,1047].forEach((f,i)=>tone(a,t+i*0.08,f,0.3,0.22,'triangle'))}
+  else if(k==='coin'){[1568,2093].forEach((f,i)=>tone(a,t+i*0.08,f,0.4,0.18))}
+  else if(k==='win'){[523,659,784,1047,784,1047].forEach((f,i)=>tone(a,t+i*0.12,f,0.38,0.2,'triangle'))}
+  else if(k==='lose'){[440,392,330,262].forEach((f,i)=>tone(a,t+i*0.17,f,0.38,0.18,'triangle'))}
+}catch(e){}}
 const wait=ms=>G&&G.fast?Promise.resolve():sleep(ms/SET.speed);
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 const active=()=>G.players.filter(p=>!p.dead);
@@ -348,7 +367,7 @@ function deal(){
     const fm={};field.forEach(c=>fm[c.m]=(fm[c.m]||0)+1);
     if(!Object.values(fm).some(v=>v===4))break;
   }
-  G={n:n===4?3:n,table:n,players:SESS.names.map((nm,i)=>({i,name:nm,isMe:i===0,hand:hands[i].sort(byMonth),cap:[],go:0,lastGo:0,mult:1,dummy:0,dead:false,shook:[]})),
+  G={n:n===4?3:n,table:n,players:SESS.names.map((nm,i)=>({i,name:nm,isMe:i===0,hand:hands[i].sort(byMonth),cap:[],go:0,lastGo:0,mult:1,dummy:0,dead:false,shook:[],turns:0,ssa:0,ssaRun:0})),
     field,deck,turn:SESS.sun,sun:SESS.sun,log:[],stage:null,waiting:false,fast:G&&G.fast,hints:SESS.hints,firstEvents:[]};
   G.players[G.sun].cap.push(...fieldBonus);if(fieldBonus.length)G.log.push(`바닥에 깔린 보너스 피 → 선(${G.players[G.sun].name})`);
 }
@@ -404,7 +423,7 @@ const TIPS={1:['소나무와 빨간 해','광: 학이 서 있는 그림','띠: �
  9:['노란 국화','열끗: 술잔(국진). 집에 따라 쌍피로도 써요','띠: 청단'],
  10:['빨간 단풍잎','열끗: 사슴','띠: 청단'],
  11:['검은 오동잎','광: 봉황','쌍피 1장 (피 2장으로 셈)','11월엔 띠와 열끗이 없어요'],
- 13:['달이 없는 특별한 피예요. 바닥 패와 짝을 맞추지 않아요','손에 있으면: 내자마자 내 것 + 더미에서 한 장 가져와 한 번 더 내요','더미에서 나오면: 바로 가져가고 한 장 더 뒤집어요','처음 바닥에 깔리면: 선이 가져가요','쌍피 2장(피 2장 값) + 쓰리피 1장(피 3장 값)','그림은 우리 집 규칙에서 바꿀 수 있어요'],
+ 13:['달이 없는 특별한 피예요. 바닥 패와 짝을 맞추지 않아요','손에 있으면: 내자마자 내 것 + 더미에서 한 장 가져와 한 번 더 내요','더미에서 나오면: 바로 가져가고 한 장 더 뒤집어요','처음 바닥에 깔리면: 선이 가져가요','3장 모두 쌍피(피 2장 값)','그림은 우리 집 규칙에서 바꿀 수 있어요'],
  12:['버드나무와 비','광: 비광(우산 쓴 사람). 광 3장에 끼면 1점 덜','열끗: 제비 · 띠 1장(단에는 안 들어감)','쌍피 1장']};
 let learnM=1, quiz=null;
 function renderLearn(){
@@ -486,20 +505,24 @@ const RULES=[
  ['gobak','고박','고를 불렀다가 다른 사람이 나면, 고 부른 사람이 진 사람들 몫을 다 냄 (3인 이상)'],
  ['meongbak','멍박','열끗 7장 이상으로 나면 진 사람 모두 2배'],
  ['gukjin','국진 (9월 열끗)','열끗으로 셀지, 쌍피로 셀지',['auto','yeol','pi'],v=>({auto:'유리한 쪽 자동',yeol:'열끗',pi:'쌍피'})[v]],
- ['bonus','보너스 피 3장','쌍피 2장 + 쓰리피 1장. 내면 바로 먹고 한 장 더'],
+ ['bonus','보너스 피 3장','모두 쌍피(피 2장 값). 내면 바로 먹고 한 장 더'],
  ['shake','흔들기','손에 같은 달 3장. 보여 주고 치면 이길 때 2배'],
  ['bomb','폭탄','손에 같은 달 3장 + 바닥 1장을 한 번에 먹기. 2배, 피 1장씩'],
+ ['firstSsa','첫 쌌다','자기 첫 차례에 싸면 다른 사람들이 각자 주는 점수',[0,3,5,7,10],v=>v?v+'점':'안 줌'],
+ ['yeonSsa','연달아 쌌다','자기 차례에 두 번 연달아 싸면 각자 주는 점수',[0,5,10,20],v=>v?v+'점':'안 줌'],
+ ['threeSsa','세 번 쌌다','한 판에 세 번 싸면 바로 이김 (10점)'],
  ['chongtong','총통','처음 받은 패에 같은 달 4장이면 바로 이김 (10점)'],
  ['steal','쪽·따닥·쓸 피 받기','이런 일이 생기면 다른 사람들에게서 피 1장씩'],
  ['nagari','나가리 다음 판 2배','아무도 못 나면 다음 판 점수 2배'],
  ['gwangVal','광 팔 때 값','광 1장당 받는 점수',[1,2],v=>v+'점'],
+ ['sound','효과음','패 내는 소리, 고·쌌다·정산 소리'],
  ['labels','카드 이름표','그림 밑에 ‘8월 광’ 같은 이름표 보이기'],
  ['speed','진행 속도','컴퓨터가 패를 내는 빠르기',[0.6,1,1.7],v=>({0.6:'천천히',1:'보통',1.7:'빠르게'})[v]],
 ];
 async function pickBonusArt(){
   let slot=0;
   const draw=()=>{const box=document.getElementById('mbox');box.innerHTML=`<div class="big" style="font-size:26px">보너스 피 그림</div>
-    <div class="pick">${[48,49,50].map((id,k)=>`<button data-slot="${k}" style="opacity:${k===slot?1:.5};${k===slot?'transform:translateY(-4px)':''}">${cardSVG(DECK[id],64,false)}${k<2?'쌍피 '+(k+1):'쓰리피'}</button>`).join('')}</div>
+    <div class="pick">${[48,49,50].map((id,k)=>`<button data-slot="${k}" style="opacity:${k===slot?1:.5};${k===slot?'transform:translateY(-4px)':''}">${cardSVG(DECK[id],64,false)}보너스 ${k+1}</button>`).join('')}</div>
     <div class="help" style="text-align:center">바꿀 카드를 누르고, 아래에서 그림을 골라요</div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">${ANIMALS.map(([k,n])=>`<button data-an="${k}" title="${n}" style="background:${SET.bonusArt[slot]===k?'#f6d77a':'#efe7d4'};border-radius:10px;padding:4px"><img src="animals/${k}.png" alt="${n}" style="width:100%;display:block"></button>`).join('')}</div>
     <div class="mbtns"><button class="big-btn" data-done="1">다 골랐어요</button></div>`;
@@ -510,9 +533,9 @@ async function pickBonusArt(){
 }
 function renderRules(){
   const b=document.getElementById('rulesBody');
-  b.innerHTML=`<div class="seg"><button id="rDef">보통 규칙으로</button></div><div class="set"><button class="r" id="rArt"><span class="t">보너스 피 그림<small>쌍피 2장 · 쓰리피 1장에 넣을 그림 고르기</small></span><span style="display:flex;gap:4px">${[48,49,50].map(i=>cardSVG(DECK[i],30,false)).join('')}</span></button></div><div class="set">${RULES.map(([k,t,d,opts,f])=>`
+  b.innerHTML=`<div class="seg"><button id="rDef">보통 규칙으로</button></div><div class="set"><button class="r" id="rArt"><span class="t">보너스 피 그림<small>보너스 쌍피 3장에 넣을 그림 고르기</small></span><span style="display:flex;gap:4px">${[48,49,50].map(i=>cardSVG(DECK[i],30,false)).join('')}</span></button></div><div class="set">${RULES.map(([k,t,d,opts,f])=>`
     <button class="r" data-k="${k}"><span class="t">${t}<small>${d}</small></span>${opts?`<span class="v">${f(SET[k])} ›</span>`:`<span class="tg ${SET[k]?'on':''}"></span>`}</button>`).join('')}</div>
-    <p class="help">첫 판에 싼 것·연달아 싼 것 보너스는 다음 버전에서 넣을게요. 바꾼 규칙은 다음 판부터 적용돼요.</p>`;
+    <p class="help">바꾼 규칙은 다음 판부터 적용돼요.</p>`;
   b.querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>{const r=RULES.find(r=>r[0]===x.dataset.k);
     if(r[3]){const i=r[3].indexOf(SET[r[0]]);SET[r[0]]=r[3][(i+1)%r[3].length]}else SET[r[0]]=!SET[r[0]];saveSet();renderRules()});
   document.getElementById('rArt').onclick=pickBonusArt;
@@ -624,7 +647,7 @@ function render(){
   document.getElementById('gameBody').innerHTML=`
     <div class="gtop"><button class="gbtn" id="gmenu" aria-label="메뉴">☰</button>
       <div class="info">${G.table===2?'맞고':G.table+'인'} · ${SESS.round}판째 · 점당 ${won(SET.jeom)}${SESS.nagari?` · <b style="color:#ffd76a">나가리 ×${2**SESS.nagari}</b>`:''}</div>
-      <button class="gbtn ${G.hints?'on':''}" id="ghint" aria-label="도우미">💡</button></div>
+      <button class="gbtn" id="gsnd" aria-label="효과음">${SET.sound?'🔊':'🔇'}</button><button class="gbtn ${G.hints?'on':''}" id="ghint" aria-label="도우미">💡</button></div>
     <div class="opps">${opps.map(o=>{const s=score(o.cap);const n=opps.length;const ow=n===1?34:n===2?28:22;
       const near=G.hints&&!o.dead&&!G.over&&s.total>=T-2;
       const og=[['gwang','광'],['yeol','열'],['tti','띠'],['pi','피']].map(([t,nm])=>{const cs=o.cap.filter(c=>c.t===t).sort(byMonth);if(!cs.length)return '';
@@ -648,6 +671,7 @@ function render(){
       return `<button data-card="${c.id}" class="${isRec?'rec glow':(G.hints&&myTurn&&isM?'match':'')}" ${myTurn?'':'disabled'} aria-label="${cname(c)}">${cardSVG(c,hw)}</button>`}).join('')}
       ${Array.from({length:me.dummy},()=>`<button data-dummy="1" ${myTurn?'':'disabled'} aria-label="넘기기">${backSVG(hw,'넘기기')}</button>`).join('')}</div>`}`;
   document.getElementById('gmenu').onclick=gameMenu;
+  document.getElementById('gsnd').onclick=()=>{SET.sound=!SET.sound;saveSet();if(SET.sound)sfx('coin');render()};
   document.getElementById('ghint').onclick=()=>{G.hints=!G.hints;if(!G.hints)G.hintOffUsed=true;render()};
   document.getElementById('mine').onclick=()=>showCaps(me);
   document.querySelectorAll('[data-opp]').forEach(b=>b.onclick=()=>showCaps(G.players[+b.dataset.opp]));
@@ -700,7 +724,7 @@ async function gameMenu(){
 
 // ───────────────────────── 사람 입력 ─────────────────────────
 let humanResolve=null;
-function humanTurn(){return new Promise(r=>{humanResolve=r;G.waiting=true;render()})}
+function humanTurn(){return new Promise(r=>{humanResolve=r;G.waiting=true;sfx('tick');render()})}
 function humanDone(a){if(!humanResolve)return;const r=humanResolve;humanResolve=null;G.waiting=false;r(a)}
 async function humanPick(c){
   if(!humanResolve)return;
@@ -731,7 +755,7 @@ function steal(p,why){
   others(p).forEach(o=>{const pis=o.cap.filter(c=>c.t==='pi').sort((a,b)=>a.val-b.val);const c=pis[0];
     if(c){o.cap.splice(o.cap.indexOf(c),1);p.cap.push(c)}});
 }
-async function stage(p,cards,text,ms){if(G.fast)return;G.stage={who:p.name,cards,text};render();await wait(ms||(p.isMe?750:1200));G.stage=null}
+async function stage(p,cards,text,ms){if(G.fast)return;sfx(text==='더미에서 뒤집음'||text==='더미에서 보너스 피!'?'flip':text==='가져갔어요'?'take':text==='못 먹었어요'?null:'slapSoft');G.stage={who:p.name,cards,text};render();await wait(ms||(p.isMe?750:1200));G.stage=null}
 const EVN={bonus:'보너스!',bonusFlip:'보너스!',bbeok:'쌌다!',jjok:'쪽!',ttadak:'따닥!',sseul:'쓸!',bbeokEat:'싼 거 먹기!',bomb:'폭탄!',shake:'흔들기!'};
 const EVT={bonus:()=>`보너스 피는 내자마자 내 것이 돼요. 더미에서 한 장을 가져와 손에 넣고, 한 번 더 내요.`,
   bonusFlip:()=>`더미에서 보너스 피가 나오면 바로 가져가고, 한 장 더 뒤집어요.`,
@@ -745,7 +769,7 @@ const EVT={bonus:()=>`보너스 피는 내자마자 내 것이 돼요. 더미에
 async function announce(p,ev,m){
   if(G.fast)return;
   if(!SESS.stats.seen.includes(ev))SESS.stats.seen.push(ev);
-  const first=!PROG.seen[ev];
+  const first=!PROG.seen[ev];sfx('event');
   if(G.hints&&first){PROG.seen[ev]=1;saveProg();
     await modal(`<div class="big"><em>${EVN[ev]}</em></div><div style="text-align:center;font-weight:700">${p.isMe?'내가':p.name+'이'} ${ev.startsWith('bonus')?'가져갔어요':ev==='bbeok'?'쌌어요':'만들었어요'}</div><div class="sub">${EVT[ev](m)}</div><div class="mbtns"><button class="big-btn dark" data-v="ok">알았어요</button></div>`);
   }else{toast(`${p.isMe?'':p.name+' '}${EVN[ev]}`,1500);await wait(1100)}
@@ -767,7 +791,7 @@ async function doTurn(p,act){
     return {again:p.hand.length+p.dummy>0};
   }
   else{
-    c=act.card;p.hand.splice(p.hand.indexOf(c),1);
+    c=act.card;p.hand.splice(p.hand.indexOf(c),1);sfx('slap');
     if(act.shake){p.mult*=2;p.shook.push(c.m);ev.push(['shake'])}
     const fm=G.field.filter(x=>x.m===c.m);
     await stage(p,[c],fm.length?'':'짝이 없어 바닥에');
@@ -777,6 +801,7 @@ async function doTurn(p,act){
     else{takeCards(p,[c,...fm]);ev.push(['bbeokEat']);steal(p,'bbeokEat');st='took4'}
     msg.push(cname(c));
   }
+  p.turns++;
   let f=G.deck.length?G.deck.pop():null;
   while(f&&f.bonus){await stage(p,[f],'더미에서 보너스 피!');p.cap.push(f);ev.push(['bonusFlip']);msg.push('→ '+cname(f));f=G.deck.length?G.deck.pop():null}
   if(f){
@@ -800,10 +825,30 @@ async function doTurn(p,act){
   G.log.push(`${p.name}: ${msg.join(' ')}`);
   const taken=p.cap.filter(x=>!before.has(x));
   G.fresh=new Set(taken.map(x=>x.id));
+  if(taken.length&&p.isMe)sfx('take');
   if(taken.length&&!p.isMe)await stage(p,taken.slice().sort(byMonth),'가져갔어요',1300);
   else if(!taken.length&&!p.isMe)await stage(p,[],'못 먹었어요',700);
   render();
   for(const [e,m] of ev)await announce(p,e,m);
+  // 쌌다 보너스
+  const ssa=ev.some(e=>e[0]==='bbeok');
+  p.ssaRun=ssa?p.ssaRun+1:0;
+  if(ssa){p.ssa++;
+    if(SET.threeSsa&&p.ssa>=3)return {three:true};
+    if(p.turns===1&&SET.firstSsa)await ssaPay(p,SET.firstSsa,'첫 쌌다');
+    else if(p.ssaRun>=2&&SET.yeonSsa)await ssaPay(p,SET.yeonSsa,'연달아 쌌다');
+  }
+}
+async function ssaPay(p,pts,label){
+  const per=pts*SET.jeom;let tot=0;
+  others(p).forEach(o=>{const pay=Math.min(per,SESS.money[o.i]);SESS.money[o.i]-=pay;SESS.money[p.i]+=pay;tot+=pay});
+  saveSess();
+  G.log.push(`${p.name}: ${label}! ${won(tot)} 받음`);
+  if(G.fast)return;
+  sfx('coin');render();
+  if(G.hints&&!PROG.seen['ssa_'+label]){PROG.seen['ssa_'+label]=1;saveProg();
+    await modal(`<div class="big"><em>${label}!</em></div><div class="sub">${label==='첫 쌌다'?'자기 첫 차례에 쌌어요.':'자기 차례에 두 번 연달아 쌌어요.'} 다른 사람들이 각자 <b>${pts}점 × ${won(SET.jeom)} = ${won(per)}</b>씩 줘요. 그리고 한 판에 세 번 싸면 바로 이겨요!</div><div class="mbtns"><button class="big-btn dark" data-v="ok">알았어요</button></div>`);
+  }else{toast(`${p.isMe?'':p.name+' '}${label}! 각자 ${won(per)}`,1800);await wait(1300)}
 }
 
 // ───────────────────────── 판 진행 ─────────────────────────
@@ -832,13 +877,14 @@ async function playRound(g){
       if(G!==g)return;
       const tr=await doTurn(p,act);
       if(G!==g)return;
+      if(tr&&tr.three){if(!G.fast)await modal(`<div class="big"><em>세 번 쌌다!</em></div><div class="sub">${p.isMe?'내가':p.name+'이'} 이번 판에 세 번 쌌어요. 바로 10점으로 이겨요.</div><div class="mbtns"><button class="big-btn" data-v="ok">정산하기</button></div>`);return settle(p,{three:true})}
       if(tr&&tr.again)continue;
       const s=score(p.cap).total, rem=p.hand.length+p.dummy;
       if(s>=threshold()&&s>p.lastGo){
         const anyLeft=active().some(q=>q.hand.length+q.dummy>0);
         let go=false;
         if(rem>0&&anyLeft&&G.deck.length>0)go=p.isMe?await askGoStop(p,s):aiGo(p,s);
-        if(go){p.go++;p.lastGo=s;G.log.push(`${p.name}: ${p.go}고!`);toast(`${p.isMe?'':p.name+' '}${p.go}고!`,1700);await wait(1300)}
+        if(go){sfx('go');p.go++;p.lastGo=s;G.log.push(`${p.name}: ${p.go}고!`);toast(`${p.isMe?'':p.name+' '}${p.go}고!`,1700);await wait(1300)}
         else{if(!p.isMe){toast(`${p.name} 스톱!`,1700);await wait(1400)}return settle(p,{})}
       }
     }
@@ -902,7 +948,8 @@ async function deathPhase(){
 // ───────────────────────── 정산 ─────────────────────────
 function calcSettle(w,opt){
   const res={w,lines:[],losers:[],base:0,mult:1};
-  if(opt.chongtong){res.base=10;res.lines.push(['총통',10])}
+  const fixed=opt.chongtong?'총통':opt.three?'세 번 쌌다':null;
+  if(fixed){res.base=10;res.lines.push([fixed,10])}
   else{
     const s=score(w.cap);res.sc=s;res.lines=s.lines.map(l=>[l[0],l[1]]);let b=s.total;
     if(w.go){b+=w.go;res.lines.push([`고 ${w.go}번`,'+'+w.go])}
@@ -915,7 +962,7 @@ function calcSettle(w,opt){
   const losers=others(w);
   losers.forEach(L=>{
     let m=1,tags=[];
-    if(!opt.chongtong){
+    if(!fixed){
       const s=res.sc;
       if(SET.pibak&&s.lines.some(l=>l[2]==='p')&&piCount(L.cap)<=SET.pibakN){m*=2;tags.push(`피박 (피 ${piCount(L.cap)}장)`)}
       if(SET.gwangbak&&s.lines.some(l=>l[2]==='g')&&L.cap.filter(c=>c.t==='gwang').length===0){m*=2;tags.push('광박 (광 0장)')}
@@ -924,12 +971,12 @@ function calcSettle(w,opt){
     res.losers.push({L,m,tags,amt:pts*m*SET.jeom});
   });
   const gb=res.losers.find(x=>x.L.go>0);
-  if(SET.gobak&&gb&&G.n>=3&&!opt.chongtong){const tot=res.losers.reduce((a,x)=>a+x.amt,0);
+  if(SET.gobak&&gb&&G.n>=3&&!fixed){const tot=res.losers.reduce((a,x)=>a+x.amt,0);
     res.losers.forEach(x=>{if(x===gb){x.amt=tot;x.tags.push('고박: 다른 사람 몫까지')}else{x.amt=0;x.tags.push(`${gb.L.name}이 대신 냄`)}});res.gobak=gb.L}
   return res;
 }
 async function settle(w,opt){
-  G.over=true;render();
+  G.over=true;render();sfx(w&&w.isMe?'win':'lose');
   if(!w){
     SESS.nagari=SET.nagari?SESS.nagari+1:0;saveSess();
     if(!G.fast){if(!PROG.seen.nagari&&G.hints){PROG.seen.nagari=1;saveProg()}
@@ -1012,6 +1059,7 @@ window.__sim=async function(rounds=200,mode=3){
         const act=await aiAction(p);
         for(const e of []){}
         const tr=await doTurn(p,act);if(tr&&tr.again)continue;
+        if(tr&&tr.three){winner=p;winner.three=1;events.three=(events.three||0)+1;break}
         const total=G.field.length+G.deck.length+G.players.reduce((a,q)=>a+q.hand.length+q.cap.length,0);
         if(total!==(SET.bonus?51:48))errs.push(`round ${r}: total ${total}`);
         const ids=new Set();G.field.concat(G.deck,...G.players.map(q=>q.hand.concat(q.cap))).forEach(c=>{if(ids.has(c.id))errs.push('dup '+c.id);ids.add(c.id)});
@@ -1023,10 +1071,10 @@ window.__sim=async function(rounds=200,mode=3){
     }
     if(guard>=200)errs.push('loop guard '+r);
     if(G.deck.length&&!winner)errs.push(`round ${r}: deck left ${G.deck.length} with no winner`);
-    if(winner){wins[winner.name]=(wins[winner.name]||0)+1;const R=calcSettle(winner,{});if(!(R.pts>0))errs.push('pts '+R.pts)}else nag++;
+    if(winner){wins[winner.name]=(wins[winner.name]||0)+1;const R=calcSettle(winner,winner.three?{three:true}:{});if(!(R.pts>0))errs.push('pts '+R.pts)}else nag++;
   }
   SESS=saved.SESS;G=null;
-  return {errs:errs.slice(0,10),errCount:errs.length,wins,nagari:nag};
+  return {errs:errs.slice(0,10),errCount:errs.length,wins,nagari:nag,events};
 };
 window.addEventListener('resize',()=>{if(G&&!G.fast)render()});
 renderHome();
