@@ -133,6 +133,16 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
 .face{width:22px;height:22px;border-radius:50%;background:#f3efe2;color:#3f4b31;display:grid;place-items:center;font-weight:700;font-size:11px;flex:none}
 .opp .st{font-size:11px;opacity:.85;display:flex;gap:6px;flex-wrap:wrap}
 .opp .st b{color:#ffd76a}
+.ocap{display:flex;flex-wrap:wrap;gap:3px 7px;margin-top:3px;align-items:flex-end;min-height:14px}
+.ocap .g{display:flex;align-items:flex-end}
+.ocap .g>.card{margin-right:var(--ov)}
+.ocap .g>.card:last-of-type{margin-right:0}
+.ocap .g.pi>.card{margin-right:var(--ovp)}
+.ocap .g.pi>.card:last-of-type{margin-right:0}
+.ocap .g i{font-style:normal;font-size:10px;font-weight:700;margin-left:2px;opacity:.9}
+.ocap .none{font-size:10.5px;opacity:.55}
+.ocap .card.new{outline:2px solid #ffd76a;outline-offset:-1px;border-radius:2px;position:relative;z-index:1}
+.badge.warn{background:#ffd76a;color:#2a251c}
 .badge{font-size:10px;background:var(--red);color:#fff;border-radius:6px;padding:0 5px;font-weight:700}
 .field{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:150px}
 .fgrid{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:10px 8px;padding:8px 4px}
@@ -564,7 +574,7 @@ function bestPlay(p,level){
 }
 function tripleMonths(p){const cnt={};p.hand.forEach(c=>{if(!c.bonus)cnt[c.m]=(cnt[c.m]||0)+1});return Object.keys(cnt).filter(m=>cnt[m]===3).map(Number)}
 async function aiAction(p){
-  await wait(650);
+  await wait(1000);
   if(p.dummy>0&&(p.hand.length===0||Math.random()<0.5))return {type:'dummy'};
   const lv=SESS.ai;
   if(SET.bomb&&lv>0){for(const m of tripleMonths(p)){if(G.field.filter(c=>c.m===m).length===1)return {type:'bomb',m}}}
@@ -615,16 +625,20 @@ function render(){
     <div class="gtop"><button class="gbtn" id="gmenu" aria-label="메뉴">☰</button>
       <div class="info">${G.table===2?'맞고':G.table+'인'} · ${SESS.round}판째 · 점당 ${won(SET.jeom)}${SESS.nagari?` · <b style="color:#ffd76a">나가리 ×${2**SESS.nagari}</b>`:''}</div>
       <button class="gbtn ${G.hints?'on':''}" id="ghint" aria-label="도우미">💡</button></div>
-    <div class="opps">${opps.map(o=>{const s=score(o.cap);return `<button class="opp ${G.turn===o.i&&!G.over?'turn':''} ${o.dead?'dead':''}" data-opp="${o.i}">
-      <span class="nm"><span class="face">${FACE[o.name]}</span>${o.name}${o.i===G.sun?' <span class="badge" style="background:#55504a">선</span>':''}${o.go?` <span class="badge">${o.go}고</span>`:''}${o.mult>1?` <span class="badge" style="background:#2456a6">×${o.mult}</span>`:''}</span>
+    <div class="opps">${opps.map(o=>{const s=score(o.cap);const n=opps.length;const ow=n===1?34:n===2?28:22;
+      const near=G.hints&&!o.dead&&!G.over&&s.total>=T-2;
+      const og=[['gwang','광'],['yeol','열'],['tti','띠'],['pi','피']].map(([t,nm])=>{const cs=o.cap.filter(c=>c.t===t).sort(byMonth);if(!cs.length)return '';
+        return `<span class="g ${t==='pi'?'pi':''}" title="${nm}">${cs.map(c=>cardSVG(c,ow,false).replace('class="card"',`class="card${G.fresh&&G.fresh.has(c.id)?' new':''}"`)).join('')}<i>${t==='pi'?piCount(o.cap):cs.length}</i></span>`}).join('');
+      return `<button class="opp ${G.turn===o.i&&!G.over?'turn':''} ${o.dead?'dead':''}" data-opp="${o.i}" style="--ov:${-Math.round(ow*.42)}px;--ovp:${-Math.round(ow*.62)}px">
+      <span class="nm"><span class="face">${FACE[o.name]}</span>${o.name}${o.i===G.sun?' <span class="badge" style="background:#55504a">선</span>':''}${o.go?` <span class="badge">${o.go}고</span>`:''}${o.mult>1?` <span class="badge" style="background:#2456a6">×${o.mult}</span>`:''}${near?' <span class="badge warn">조심!</span>':''}</span>
       <span class="st">${o.dead?'<span>이번 판 쉼</span>':`<span>손 ${o.hand.length+o.dummy}</span><span><b>${s.total}점</b></span>`}<span><span class="coin"></span>${won(SESS.money[o.i])}</span></span>
-      ${o.dead?'':`<span class="st"><span>광${o.cap.filter(c=>c.t==='gwang').length}</span><span>열${o.cap.filter(c=>c.t==='yeol').length}</span><span>띠${o.cap.filter(c=>c.t==='tti').length}</span><span>피${piCount(o.cap)}</span></span>`}</button>`}).join('')}</div>
+      ${o.dead?'':`<span class="ocap">${og||'<span class="none">먹은 패 없음</span>'}</span>`}</button>`}).join('')}</div>
     <div class="field">
       <div class="log">${G.log.slice(-1).join('')}</div>
       <div class="fgrid">${Object.keys(groups).map(Number).sort((a,b)=>a-b).map(m=>{const g=groups[m];const h=Math.round(fw*CR);
         return `<div class="fgroup ${hint&&hint.target&&hint.target.m===m?'glow':''}" style="width:${fw}px;height:${h+(g.length-1)*12}px">${g.map((c,k)=>`<div style="top:${k*12}px">${cardSVG(c,fw)}</div>`).join('')}</div>`}).join('')}
         <div class="deck">${backSVG(fw)}<div class="n">더미 ${G.deck.length}</div></div></div>
-      ${G.stage?`<div class="stage"><div class="box"><div class="who">${G.stage.who}</div><div class="cs">${G.stage.cards.map(c=>cardSVG(c,64)).join('')}</div>${G.stage.text?`<div>${G.stage.text}</div>`:''}</div></div>`:''}
+      ${G.stage?`<div class="stage"><div class="box"><div class="who">${G.stage.who}</div><div class="cs">${G.stage.cards.map(c=>cardSVG(c,Math.max(34,Math.min(64,Math.floor((W-70)/G.stage.cards.length)-8)))).join('')}</div>${G.stage.text?`<div>${G.stage.text}</div>`:''}</div></div>`:''}
     </div>
     <div class="myline"><span>${me.i===G.sun?'<span class="badge" style="background:#55504a">선</span> ':''}나 · <b>${sc.total}점</b>${me.go?` · ${me.go}고`:''}${me.mult>1?` · ×${me.mult}`:''} <span style="opacity:.7">(${T}점 나면 고/스톱)</span></span><span><span class="coin"></span>${won(SESS.money[0])}</span></div>
     ${G.hints?`<div class="meters">${meter('광',sc.gn,3,'#e3b23c',sc.gn===2)}${meter('열끗',sc.yn,5,'#58b07c',sc.yn===4)}${meter('띠',sc.tn,5,'#e2574a',sc.tn===4)}${meter('피',sc.pv,10,'#cfc8b8',sc.pv>=8&&sc.pv<10)}${extra.slice(0,2).join('')}</div>`:''}
@@ -717,7 +731,7 @@ function steal(p,why){
   others(p).forEach(o=>{const pis=o.cap.filter(c=>c.t==='pi').sort((a,b)=>a.val-b.val);const c=pis[0];
     if(c){o.cap.splice(o.cap.indexOf(c),1);p.cap.push(c)}});
 }
-async function stage(p,cards,text){if(G.fast)return;G.stage={who:p.name,cards,text};render();await wait(p.isMe?550:800);G.stage=null}
+async function stage(p,cards,text,ms){if(G.fast)return;G.stage={who:p.name,cards,text};render();await wait(ms||(p.isMe?750:1200));G.stage=null}
 const EVN={bonus:'보너스!',bonusFlip:'보너스!',bbeok:'뻑!',jjok:'쪽!',ttadak:'따닥!',sseul:'쓸!',bbeokEat:'뻑 먹기!',bomb:'폭탄!',shake:'흔들기!'};
 const EVT={bonus:()=>`보너스 피는 내자마자 내 것이 돼요. 더미에서 한 장을 가져와 손에 넣고, 한 번 더 내요.`,
   bonusFlip:()=>`더미에서 보너스 피가 나오면 바로 가져가고, 한 장 더 뒤집어요.`,
@@ -734,9 +748,10 @@ async function announce(p,ev,m){
   const first=!PROG.seen[ev];
   if(G.hints&&first){PROG.seen[ev]=1;saveProg();
     await modal(`<div class="big"><em>${EVN[ev]}</em></div><div style="text-align:center;font-weight:700">${p.isMe?'내가':p.name+'이'} ${ev.startsWith('bonus')?'가져갔어요':'만들었어요'}</div><div class="sub">${EVT[ev](m)}</div><div class="mbtns"><button class="big-btn dark" data-v="ok">알았어요</button></div>`);
-  }else{toast(`${p.isMe?'':p.name+' '}${EVN[ev]}`);await wait(700)}
+  }else{toast(`${p.isMe?'':p.name+' '}${EVN[ev]}`,1500);await wait(1100)}
 }
 async function doTurn(p,act){
+  const before=new Set(p.cap);
   const ev=[];let c=null,st='none',pend=null,msg=[];
   if(act.type==='bomb'){
     const cs=p.hand.filter(x=>x.m===act.m);p.hand=p.hand.filter(x=>x.m!==act.m);
@@ -783,6 +798,10 @@ async function doTurn(p,act){
   const handsLeft=active().some(q=>q.hand.length+q.dummy>0);
   if(G.field.length===0&&handsLeft){ev.push(['sseul']);steal(p,'sseul')}
   G.log.push(`${p.name}: ${msg.join(' ')}`);
+  const taken=p.cap.filter(x=>!before.has(x));
+  G.fresh=new Set(taken.map(x=>x.id));
+  if(taken.length&&!p.isMe)await stage(p,taken.slice().sort(byMonth),'가져갔어요',1300);
+  else if(!taken.length&&!p.isMe)await stage(p,[],'못 먹었어요',700);
   render();
   for(const [e,m] of ev)await announce(p,e,m);
 }
@@ -819,8 +838,8 @@ async function playRound(g){
         const anyLeft=active().some(q=>q.hand.length+q.dummy>0);
         let go=false;
         if(rem>0&&anyLeft&&G.deck.length>0)go=p.isMe?await askGoStop(p,s):aiGo(p,s);
-        if(go){p.go++;p.lastGo=s;G.log.push(`${p.name}: ${p.go}고!`);toast(`${p.isMe?'':p.name+' '}${p.go}고!`,1300);await wait(900)}
-        else{if(!p.isMe){toast(`${p.name} 스톱!`,1300);await wait(1000)}return settle(p,{})}
+        if(go){p.go++;p.lastGo=s;G.log.push(`${p.name}: ${p.go}고!`);toast(`${p.isMe?'':p.name+' '}${p.go}고!`,1700);await wait(1300)}
+        else{if(!p.isMe){toast(`${p.name} 스톱!`,1700);await wait(1400)}return settle(p,{})}
       }
     }
     if(!active().some(q=>q.hand.length+q.dummy>0))return settle(null,{});
@@ -871,7 +890,7 @@ async function deathPhase(){
       // 죽은 사람 패는 더미에 섞어 넣음
       G.deck=shuffle(G.deck.concat(p.hand));p.hand=[];
     }else rows.push({p,d:'칩니다'});
-    if(!p.isMe&&!last&&!G.fast){await wait(300)}
+    if(!p.isMe&&!last&&!G.fast){await wait(500)}
   }
   if(someoneDied&&!rows.some(r=>r.d.startsWith('광')||r.d.startsWith('자리'))){
     await modal(draw(`<div class="sub">${rows.find(r=>r.d.startsWith('죽음')).p.name}이 스스로 죽어서 나머지가 모두 쳐요. 광은 아무도 못 팔아요.</div><div class="mbtns"><button class="big-btn" data-v="ok">시작</button></div>`));
