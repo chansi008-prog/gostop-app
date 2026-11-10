@@ -232,7 +232,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
 const store={get(k,d){try{const v=localStorage.getItem('gostop.'+k);return v?JSON.parse(v):d}catch(e){return d}},
   set(k,v){try{localStorage.setItem('gostop.'+k,JSON.stringify(v))}catch(e){}}};
 const DEF_SET={bonus:true,bonusArt:['rabbit','panda','dragon'],jeom:100,start:10000,goDouble:true,pibak:true,pibakN:5,gwangbak:true,gobak:true,meongbak:false,
-  gukjin:'auto',shake:true,bomb:true,chongtong:true,steal:true,nagari:true,gwangVal:1,refills:3,labels:true,speed:1,firstSsa:5,yeonSsa:10,threeSsa:true,sound:true};
+  gukjin:'auto',shake:true,bomb:true,chongtong:true,steal:true,nagari:true,gwangVal:1,refills:3,labels:true,speed:1,bonusSteal:false,firstSsa:5,yeonSsa:10,threeSsa:true,sound:true};
 let SET=Object.assign({},DEF_SET,store.get('set',{}));
 let PROG=Object.assign({months:[],quizBest:0,helpWins:0,realWins:0,settleRight:0,seen:{}},store.get('prog',{}));
 let SESS=store.get('sess',null);
@@ -506,6 +506,7 @@ const RULES=[
  ['meongbak','멍박','열끗 7장 이상으로 나면 진 사람 모두 2배'],
  ['gukjin','국진 (9월 열끗)','열끗으로 셀지, 쌍피로 셀지',['auto','yeol','pi'],v=>({auto:'유리한 쪽 자동',yeol:'열끗',pi:'쌍피'})[v]],
  ['bonus','보너스 피 3장','모두 쌍피(피 2장 값). 내면 바로 먹고 한 장 더'],
+ ['bonusSteal','보너스 피 먹으면 피 받기','보너스 피를 먹을 때마다 다른 사람들에게서 피 1장씩'],
  ['shake','흔들기','손에 같은 달 3장. 보여 주고 치면 이길 때 2배'],
  ['bomb','폭탄','손에 같은 달 3장 + 바닥 1장을 한 번에 먹기. 2배, 피 1장씩'],
  ['firstSsa','첫 쌌다','자기 첫 차례에 싸면 다른 사람들이 각자 주는 점수',[0,3,5,7,10],v=>v?v+'점':'안 줌'],
@@ -751,14 +752,14 @@ async function humanPickTarget(opts,c){
 function rmField(c){const i=G.field.indexOf(c);if(i>=0)G.field.splice(i,1)}
 function takeCards(p,cs){cs.forEach(c=>{rmField(c);if(!p.cap.includes(c))p.cap.push(c)})}
 function steal(p,why){
-  if(!SET.steal&&why!=='bomb'&&why!=='bbeokEat')return;
+  if(why==='bonus'){if(!SET.bonusSteal)return}else if(!SET.steal&&why!=='bomb'&&why!=='bbeokEat')return;
   others(p).forEach(o=>{const pis=o.cap.filter(c=>c.t==='pi').sort((a,b)=>a.val-b.val);const c=pis[0];
     if(c){o.cap.splice(o.cap.indexOf(c),1);p.cap.push(c)}});
 }
 async function stage(p,cards,text,ms){if(G.fast)return;sfx(text==='더미에서 뒤집음'||text==='더미에서 보너스 피!'?'flip':text==='가져갔어요'?'take':text==='못 먹었어요'?null:'slapSoft');G.stage={who:p.name,cards,text};render();await wait(ms||(p.isMe?750:1200));G.stage=null}
 const EVN={bonus:'보너스!',bonusFlip:'보너스!',bbeok:'쌌다!',jjok:'쪽!',ttadak:'따닥!',sseul:'쓸!',bbeokEat:'싼 거 먹기!',bomb:'폭탄!',shake:'흔들기!'};
-const EVT={bonus:()=>`보너스 피는 내자마자 내 것이 돼요. 더미에서 한 장을 가져와 손에 넣고, 한 번 더 내요.`,
-  bonusFlip:()=>`더미에서 보너스 피가 나오면 바로 가져가고, 한 장 더 뒤집어요.`,
+const EVT={bonus:()=>`보너스 피는 내자마자 내 것이 돼요.${SET.bonusSteal?' 다른 사람들에게서 피도 1장씩 받아요.':''} 더미에서 한 장을 가져와 손에 넣고, 한 번 더 내요.`,
+  bonusFlip:()=>`더미에서 보너스 피가 나오면 바로 가져가고${SET.bonusSteal?', 다른 사람들에게서 피도 1장씩 받고':''}, 한 장 더 뒤집어요.`,
   bbeok:m=>`<b>${m}월</b> 세 장이 바닥에 붙었어요. 네 번째 ${m}월을 내는 사람이 다 가져가고, 다른 사람들에게서 피도 1장씩 받아요.`,
   jjok:()=>`짝 없이 바닥에 낸 패를, 더미에서 뒤집은 같은 달 패가 바로 먹었어요. 다른 사람들에게서 피 1장씩 받아요.`,
   ttadak:()=>`바닥의 같은 달 2장을, 낸 패와 뒤집은 패로 4장 모두 먹었어요. 피 1장씩 받아요.`,
@@ -783,7 +784,7 @@ async function doTurn(p,act){
     takeCards(p,cs.concat(fm));p.mult*=2;p.dummy+=2;ev.push(['bomb']);steal(p,'bomb');st='bomb';msg.push(`${act.m}월 폭탄`);
   }else if(act.type==='dummy'){p.dummy--;st='dummy';msg.push('넘기기');}
   else if(act.card.bonus){
-    c=act.card;p.hand.splice(p.hand.indexOf(c),1);p.cap.push(c);
+    c=act.card;p.hand.splice(p.hand.indexOf(c),1);p.cap.push(c);steal(p,'bonus');
     await stage(p,[c],'보너스 피! 한 번 더');
     if(G.deck.length){p.hand.push(G.deck.pop());p.hand.sort(byMonth)}
     G.log.push(`${p.name}: ${cname(c)} → 한 장 더`);render();
@@ -803,7 +804,7 @@ async function doTurn(p,act){
   }
   p.turns++;
   let f=G.deck.length?G.deck.pop():null;
-  while(f&&f.bonus){await stage(p,[f],'더미에서 보너스 피!');p.cap.push(f);ev.push(['bonusFlip']);msg.push('→ '+cname(f));f=G.deck.length?G.deck.pop():null}
+  while(f&&f.bonus){await stage(p,[f],'더미에서 보너스 피!');p.cap.push(f);steal(p,'bonus');ev.push(['bonusFlip']);msg.push('→ '+cname(f));f=G.deck.length?G.deck.pop():null}
   if(f){
     await stage(p,[f],'더미에서 뒤집음');
     msg.push('→ 뒤집기 '+cname(f));
