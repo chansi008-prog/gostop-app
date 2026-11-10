@@ -118,6 +118,43 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
 .term .tag{font-family:var(--display);font-size:22px;color:var(--red);line-height:1.2}
 .term p{margin:0;color:#4a463e;font-size:14px}
 
+/* 상황 문제 */
+.drill{display:flex;flex-direction:column;gap:12px}
+.dtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dtop b{font-family:var(--display);font-size:22px;font-weight:400}
+.dtable{background:radial-gradient(130% 90% at 50% 40%,var(--felt) 0%,var(--felt2) 100%);color:#f3efe2;border-radius:16px;padding:10px 10px 12px;display:flex;flex-direction:column;gap:10px}
+.dinfo{font-size:13px;text-align:center;opacity:.95}
+.dlbl{font-size:11.5px;opacity:.8;margin-bottom:3px}
+.drow{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}
+.drow.c{justify-content:center}
+.dopp{background:#0003;border-radius:10px;padding:6px 8px}
+.dopp .n{font-weight:700;font-size:12.5px;margin-bottom:3px}
+.dgrp{display:flex;flex-direction:column}
+.dgrp>*+*{margin-top:-50px}
+.dhand button{transition:transform .15s;border-radius:6px}
+.dhand button:not(:disabled):active{transform:translateY(-6px)}
+.dhand button.ok{transform:translateY(-8px);outline:3px solid #6fd08f;outline-offset:1px}
+.dhand button.no{outline:3px solid #ff7a6b;outline-offset:1px;opacity:.75}
+.dq{font-weight:700;font-size:17px;text-align:center}
+.dwhy{background:#fffbea;color:#2a251c;border-radius:12px;padding:11px 13px;font-size:14px;line-height:1.55}
+.dwhy b{color:var(--red)}
+.dwhy .r{font-family:var(--display);font-size:20px;display:block;margin-bottom:2px}
+/* 졸업장 */
+.cert{background:#fffdf6;border:7px double var(--red);border-radius:6px;padding:26px 18px 22px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;position:relative}
+.cert h1{font-size:46px;letter-spacing:.35em;margin-right:-.35em;color:var(--red)}
+.cert .nm{font-family:var(--display);font-size:30px;border-bottom:1.5px solid var(--ink);padding:0 18px 2px;min-width:60%}
+.cert .txt{font-size:14.5px;line-height:1.75;max-width:340px}
+.cert .stats{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-size:12.5px;color:var(--muted);text-align:left}
+.cert .stats b{color:var(--ink)}
+.stamps{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.stamp{width:82px;height:82px;border-radius:50%;border:3px solid var(--red);color:var(--red);display:grid;place-items:center;font-family:var(--display);font-size:15px;line-height:1.15;transform:rotate(-10deg);padding:6px}
+.stamp.off{border:2px dashed #c9bfa8;color:#b8ad95;transform:none;font-family:var(--body);font-size:11px}
+.cert .dt{font-family:var(--display);font-size:16px}
+.cert .from{font-family:var(--display);font-size:20px}
+.gradbtn{background:var(--gold);color:#2a1d00;border-radius:14px;padding:12px;font-weight:700;width:100%;font-size:15px}
+.secl{font-size:12.5px;color:var(--muted);margin:6px 2px -2px;font-weight:700}
+.course .k.lock{color:var(--muted)}
+
 /* 대국 */
 #game{background:radial-gradient(130% 80% at 50% 40%,var(--felt) 0%,var(--felt2) 100%);color:#f3efe2}
 .gwrap{flex:1;display:flex;flex-direction:column;max-width:620px;width:100%;margin:0 auto;min-height:0;padding:0 max(6px,env(safe-area-inset-left,0px)) 4px max(6px,env(safe-area-inset-right,0px))}
@@ -220,6 +257,10 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
 <section class="screen" id="rules"><div class="topbar"><button class="back" data-go="home" aria-label="뒤로">‹</button><h2>우리 집 규칙</h2></div><div class="page" id="rulesBody"></div></section>
 <!-- 족보 -->
 <section class="screen" id="guide"><div class="topbar"><button class="back" data-go="home" aria-label="뒤로">‹</button><h2>족보 · 용어</h2></div><div class="page" id="guideBody"></div></section>
+<!-- 상황 문제 -->
+<section class="screen" id="drill"><div class="topbar"><button class="back" data-go="home" aria-label="뒤로">‹</button><h2>상황 문제</h2></div><div class="page" id="drillBody"></div></section>
+<!-- 졸업장 -->
+<section class="screen" id="cert"><div class="topbar"><button class="back" data-go="home" aria-label="뒤로">‹</button><h2>졸업장</h2></div><div class="page" id="certBody"></div></section>
 <!-- 대국 -->
 <section class="screen" id="game"><div class="gwrap" id="gameBody"></div></section>
 
@@ -234,7 +275,7 @@ const store={get(k,d){try{const v=localStorage.getItem('gostop.'+k);return v?JSO
 const DEF_SET={bonus:true,bonusArt:['rabbit','panda','dragon'],jeom:100,start:10000,goDouble:true,pibak:true,pibakN:5,gwangbak:true,gobak:true,meongbak:false,
   gukjin:'auto',shake:true,bomb:true,chongtong:true,steal:true,nagari:true,gwangVal:1,refills:3,labels:true,speed:1,bonusSteal:false,firstSsa:5,yeonSsa:10,threeSsa:true,sound:true};
 let SET=Object.assign({},DEF_SET,store.get('set',{}));
-let PROG=Object.assign({months:[],quizBest:0,helpWins:0,realWins:0,settleRight:0,seen:{}},store.get('prog',{}));
+let PROG=Object.assign({months:[],quizBest:0,helpWins:0,realWins:0,settleRight:0,seen:{},drill:[],masterWins:0,name:'',gradDate:'',told:{}},store.get('prog',{}));
 let SESS=store.get('sess',null);
 const saveSet=()=>store.set('set',SET), saveProg=()=>store.set('prog',PROG), saveSess=()=>store.set('sess',SESS);
 const today=()=>new Date().toISOString().slice(0,10);
@@ -374,7 +415,7 @@ function deal(){
 
 // ───────────────────────── 화면 공통 ─────────────────────────
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
-  if(id==='home')renderHome(); if(id==='learn')renderLearn(); if(id==='rules')renderRules(); if(id==='guide')renderGuide();}
+  if(id==='home')renderHome(); if(id==='learn')renderLearn(); if(id==='rules')renderRules(); if(id==='guide')renderGuide(); if(id==='drill')renderDrill(); if(id==='cert')renderCert();}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)show(b.dataset.go)});
 let modalResolve=null;
 function modal(html,handlers={}){
@@ -391,24 +432,151 @@ function toast(t,ms=1100){if(G&&G.fast)return;const el=document.getElementById('
 const won=n=>n.toLocaleString('ko-KR')+'원';
 
 // ───────────────────────── 홈 ─────────────────────────
-function renderHome(){
+function courseDone(){
   const ms=PROG.months.length, c1=Math.min(1,(ms/12)*0.7+(Math.min(PROG.quizBest,10)/10)*0.3);
   const c2=Math.min(1,PROG.helpWins/3), c3=Math.min(1,PROG.realWins/3);
-  const next=c1<1?1:c2<1?2:3;
+  const c4=Math.min(1,PROG.drill.length/PROBS.length), c5=Math.min(1,PROG.masterWins/3);
+  return {ms,c1,c2,c3,c4,c5,grad:c1>=1&&c2>=1&&c3>=1};
+}
+function renderHome(){
+  const {ms,c1,c2,c3,c4,c5,grad}=courseDone();
+  const next=c1<1?1:c2<1?2:c3<1?3:c4<1?4:c5<1?5:0;
   const fan=[DECK[0],DECK[9],DECK[28],DECK[44]];
   document.getElementById('homeBody').innerHTML=`
-    <div class="logo">고스톱 교실<small>명절 전까지 세 단계 졸업하기</small></div>
+    <div class="logo">고스톱 교실<small>${grad?'졸업했어요! 이제 고수 코스':'명절 전까지 세 단계 졸업하기'}</small></div>
     <div class="fan">${fan.map((c,i)=>`<div style="transform:rotate(${-18+i*12}deg)">${cardSVG(c,66,false)}</div>`).join('')}</div>
     <button class="course ${next===1?'next':''}" id="c1"><span class="k">1</span><div style="flex:1"><b>화투 패 익히기</b><span class="s">12달 중 ${ms}달 봄 · 퀴즈 최고 ${PROG.quizBest}/10</span><div class="bar"><i style="width:${c1*100}%"></i></div></div></button>
     <button class="course ${next===2?'next':''}" id="c2"><span class="k">2</span><div style="flex:1"><b>도우미랑 한 판</b><span class="s">힌트 켜고 이긴 판 ${Math.min(PROG.helpWins,3)}/3</span><div class="bar"><i style="width:${c2*100}%"></i></div></div></button>
     <button class="course ${next===3?'next':''}" id="c3"><span class="k">3</span><div style="flex:1"><b>실전 한 판</b><span class="s">힌트 없이 이긴 판 ${Math.min(PROG.realWins,3)}/3 · 정산 퀴즈 포함</span><div class="bar"><i style="width:${c3*100}%"></i></div></div></button>
+    ${grad?`<button class="gradbtn" id="gcert">🎓 졸업장 보기</button>`:''}
+    <div class="secl">졸업 후 고수 코스</div>
+    <button class="course ${next===4?'next':''}" id="c4"><span class="k">4</span><div style="flex:1"><b>상황 문제</b><span class="s">이럴 땐 뭘 낼까? 고? 스톱? 맞힌 문제 ${PROG.drill.length}/${PROBS.length}</span><div class="bar"><i style="width:${c4*100}%"></i></div></div></button>
+    <button class="course ${next===5?'next':''}" id="c5"><span class="k">5</span><div style="flex:1"><b>명절 고수 도전</b><span class="s">가장 센 컴퓨터를 힌트 없이 이긴 판 ${Math.min(PROG.masterWins,3)}/3</span><div class="bar"><i style="width:${c5*100}%"></i></div></div></button>
     ${SESS&&!SESS.over?`<button class="wallet" id="resume"><span><span class="coin"></span>이어서 하기 · ${SESS.mode===2?'맞고':SESS.mode+'인'} ${SESS.round}판째</span><b>${won(SESS.money[0])}</b></button>`:''}
     <div class="minirow"><button data-go="guide">족보 · 용어</button><button data-go="rules">우리 집 규칙</button></div>
     <p class="help" style="text-align:center;margin-top:4px">v1 · 화투 그림 Spenĉjo (CC BY-SA 4.0)</p>`;
   document.getElementById('c1').onclick=()=>show('learn');
   document.getElementById('c2').onclick=()=>openSetup(true);
   document.getElementById('c3').onclick=()=>openSetup(false);
+  document.getElementById('c4').onclick=()=>{DR=null;show('drill')};
+  document.getElementById('c5').onclick=()=>openSetup(false,true);
+  const gc=document.getElementById('gcert');if(gc)gc.onclick=()=>show('cert');
   const r=document.getElementById('resume');if(r)r.onclick=()=>startRound();
+  celebrate({c4,c5,grad});
+}
+async function celebrate({c4,c5,grad}){
+  const T=PROG.told;
+  if(grad&&!T.grad){T.grad=1;if(!PROG.gradDate)PROG.gradDate=new Date().toLocaleDateString('ko-KR');saveProg();sfx('win');
+    await modal(`<div class="big">🎓<br><em>졸업</em>했어요!</div><div class="sub">화투 패 익히기, 도우미랑 한 판, 실전 한 판을 모두 마쳤어요. 졸업장을 받아 가세요. 다음은 <b>고수 코스</b>예요.</div><div class="mbtns"><button class="big-btn gold" data-v="ok">졸업장 받기</button></div>`);
+    return show('cert');}
+  if(c4>=1&&!T.s4){T.s4=1;saveProg();sfx('coin');
+    await modal(`<div class="big"><em>상황 박사</em></div><div class="sub">상황 문제 ${PROBS.length}개를 다 맞혔어요! 졸업장에 <b>상황 박사</b> 도장이 찍혀요.</div><div class="mbtns"><button class="big-btn" data-v="ok">좋아요</button></div>`);}
+  if(c5>=1&&!T.s5){T.s5=1;saveProg();sfx('win');
+    await modal(`<div class="big"><em>명절 고수</em></div><div class="sub">가장 센 컴퓨터를 힌트 없이 세 번 이겼어요! 이제 명절에 어른들과 쳐도 돼요. 졸업장에 <b>명절 고수</b> 도장이 찍혀요.</div><div class="mbtns"><button class="big-btn" data-v="ok">좋아요</button></div>`);}
+}
+
+// ───────────────────────── 졸업장 ─────────────────────────
+async function askName(){
+  const v=await modal(`<div class="big" style="font-size:26px">졸업장에 쓸 이름</div><input id="nmIn" maxlength="10" value="${(PROG.name||'').replace(/"/g,'')}" placeholder="이름" style="font-size:20px;padding:12px;border-radius:12px;border:1.5px solid var(--line);text-align:center;font-family:var(--body)"><div class="mbtns"><button class="big-btn" data-v="ok">확인</button></div>`,
+    {ok:()=>{PROG.name=document.getElementById('nmIn').value.trim().slice(0,10);saveProg()}});
+  return v;
+}
+async function renderCert(){
+  const b=document.getElementById('certBody');
+  const {c4,c5,grad}=courseDone();
+  if(!grad){b.innerHTML=`<p class="help" style="text-align:center;margin-top:40px">1·2·3단계를 다 마치면 졸업장을 받아요.</p>`;return}
+  if(!PROG.name){b.innerHTML='';await askName()}
+  const nm=PROG.name||'고스톱 학생';
+  b.innerHTML=`<div class="cert">
+    <h1>졸업장</h1>
+    <div class="nm">${nm.replace(/</g,'&lt;')}</div>
+    <div class="txt">위 사람은 고스톱 교실에서<br><b>화투 패 익히기 · 도우미랑 한 판 · 실전 한 판</b>을<br>모두 마쳤기에 이 졸업장을 드립니다.<br>이제 명절에 당당히 한 자리 차지하세요.</div>
+    <div class="stats"><span>화투 퀴즈 최고 <b>${PROG.quizBest}/10</b></span><span>정산 퀴즈 정답 <b>${PROG.settleRight}번</b></span><span>도우미랑 이긴 판 <b>${PROG.helpWins}</b></span><span>실전 이긴 판 <b>${PROG.realWins}</b></span></div>
+    <div class="stamps"><div class="stamp">고스톱<br>교실<br>졸업</div>${c4>=1?'<div class="stamp">상황<br>박사</div>':'<div class="stamp off">상황 문제<br>다 맞히면</div>'}${c5>=1?'<div class="stamp">명절<br>고수</div>':'<div class="stamp off">명절 고수<br>3번 이기면</div>'}</div>
+    <div class="dt">${PROG.gradDate||new Date().toLocaleDateString('ko-KR')}</div>
+    <div class="from">고스톱 교실</div>
+  </div>
+  <p class="help" style="text-align:center">화면을 캡처해서 가족에게 자랑해요 📸</p>
+  <div class="minirow"><button id="cName">이름 바꾸기</button><button data-go="home">처음으로</button></div>`;
+  document.getElementById('cName').onclick=async()=>{await askName();renderCert()};
+}
+
+// ───────────────────────── 상황 문제 ─────────────────────────
+// 카드 번호: 달 m의 첫 장 = (m-1)*4. 1월 광0 홍단1 피2·3 / 2월 꾀꼬리4 홍단5 / 3월 광8 홍단9 / 4월 두견새12 초단13 / 5월 열16 초단17
+// 6월 열20 청단21 / 7월 열24 초단25 / 8월 광28 기러기29 / 9월 국진32 청단33 / 10월 열36 청단37 / 11월 광40 쌍피41 / 12월 비광44 열45 띠46 쌍피47
+const PROBS=[
+ {id:'cnt1',t:'count',title:'점수 세기',mine:[0,8,28,1,5,9,2,3,6,7,10,11,14],q:'내 점수는 몇 점일까요?',opts:['3점','5점','6점','7점'],ans:'6점',
+  why:'광 3장(비광 없음) = <b>3점</b>. 1·2·3월 글씨 있는 빨간 띠 = <b>홍단 3점</b>. 피는 7장이라 아직 0점. 합해서 <b>6점</b>.'},
+ {id:'godori',t:'play',title:'고도리 만들기',mine:[4,12],field:[29,18,38],hand:[30,16,10],q:'어떤 패를 낼까요?',ans:[30],
+  why:'새가 벌써 2마리(2월 꾀꼬리·4월 두견새) 있어요. <b>8월 피</b>로 바닥의 <b>8월 기러기</b>를 먹으면 새 3마리, <b>고도리 5점</b>!'},
+ {id:'hong',t:'play',title:'홍단 만들기',mine:[1,5],field:[9,22,36],hand:[10,20,42],q:'어떤 패를 낼까요?',ans:[10],
+  why:'홍단이 2장(1월·2월) 있어요. <b>3월 피</b>로 <b>3월 홍단</b>을 먹으면 <b>홍단 3점</b>. 6월 열끗으로 6월 피를 먹는 것보다 훨씬 커요.'},
+ {id:'cnt2',t:'count',title:'점수 세기 (비광)',mine:[0,8,44,4,12,29,16,20],q:'내 점수는 몇 점일까요?',opts:['7점','8점','9점','10점'],ans:'8점',
+  why:'광 3장인데 <b>비광</b>이 끼면 3점이 아니라 <b>2점</b>. 2·4·8월 새 3마리 = <b>고도리 5점</b>. 열끗이 5장(새 3 + 5월·6월)이라 <b>1점</b>. 2 + 5 + 1 = <b>8점</b>.'},
+ {id:'ssangpi',t:'play',title:'쌍피 먼저',mine:[2,3,6,7,10,11,14,15],field:[41,18,34],hand:[42,19,47],q:'어떤 패를 낼까요?',ans:[42],
+  why:'내 피가 8장이에요. <b>11월 피</b>로 <b>11월 쌍피</b>(피 2장 값)를 먹으면 피 11장 → <b>2점</b>. 5월로 먹으면 10장 → 1점이에요. 같은 값이면 쌍피 먼저!'},
+ {id:'throw',t:'play',title:'맞는 패가 없을 때',field:[0,22,36],hand:[14,28,47],q:'바닥과 맞는 패가 없어요. 뭘 버릴까요?',ans:[14],
+  why:'<b>8월 광</b>이나 <b>12월 쌍피</b>를 버리면 다른 사람이 쉽게 가져가요. 가장 덜 아까운 <b>4월 피</b>를 버려요.'},
+ {id:'go1',t:'go',title:'고? 스톱?',info:'3인 · 지금 내가 3점 (광 3장) · 내 손에 5장 남음',mine:[0,8,28,4],opp:[{n:'할머니봇',cap:[6,14]},{n:'삼촌봇',cap:[22]}],q:'고 할까요, 스톱 할까요?',opts:['고','스톱'],ans:'고',
+  why:'다른 두 사람은 먹은 게 거의 없어서 금방 나기 어려워요. 내 손엔 5장이나 남았으니 <b>고</b>로 점수를 키워요. 고 1번이면 +1점!'},
+ {id:'ssa',t:'play',title:'싼 패 가져오기',field:[16,17,18,34],hand:[19,35,6],q:'어떤 패를 낼까요?',ans:[19],
+  why:'바닥에 5월이 3장 붙어 있어요(누군가 <b>쌌어요</b>). 마지막 <b>5월 피</b>를 내면 <b>4장을 다 가져오고</b>, 다른 사람들에게서 피도 1장씩 받아요.'},
+ {id:'cnt3',t:'count',title:'점수 세기 (쌍피)',mine:[41,47,2,3,6,7,10,11,13,17,25],q:'내 점수는 몇 점일까요?',opts:['2점','3점','4점','5점'],ans:'4점',
+  why:'쌍피 2장은 피 4장 값. 피 6장과 합치면 <b>피 10장 → 1점</b>. 4·5·7월 글씨 없는 빨간 띠 = <b>초단 3점</b>. 합해서 <b>4점</b>.'},
+ {id:'pay1',t:'pay',title:'돈 계산 (피박)',info:'3인 · 점당 100원 · 내가 <b>5점</b>으로 났어요 (홍단 3점 + 피 12장 2점) · 피박은 피 5장 이하',opp:[{n:'할머니봇',note:'먹은 피 4장'},{n:'삼촌봇',note:'먹은 피 8장'}],q:'두 사람에게서 모두 얼마를 받을까요?',opts:['500원','1,000원','1,500원','2,000원'],ans:'1,500원',
+  why:'피로도 점수를 냈는데 할머니봇은 피가 5장 이하 → <b>피박 2배</b>: 5점 × 2 × 100원 = 1,000원. 삼촌봇은 5점 × 100원 = 500원. 합해서 <b>1,500원</b>.'},
+ {id:'block1',t:'play',title:'상대 광 막기',opp:[{n:'삼촌봇',cap:[0,8,2,3]}],mine:[6,7],field:[28,26,46],hand:[31,24,15],q:'어떤 패를 낼까요?',ans:[31],
+  why:'삼촌봇이 광을 2장(1월·3월) 갖고 있어요. 8월 광을 남겨 두면 삼촌봇이 가져가 <b>광 3장 = 3점</b>으로 날 수 있어요. <b>8월 피</b>로 먼저 데려와요.'},
+ {id:'block2',t:'play',title:'청단 막기',opp:[{n:'할머니봇',cap:[21,33]}],mine:[8],field:[37,0],hand:[38,2,15],q:'어떤 패를 낼까요?',ans:[38],
+  why:'할머니봇이 <b>청단 2장</b>(6월·9월)을 갖고 있어요. 10월 청단을 놓치면 바로 <b>3점</b>! 광 1장보다 막는 게 먼저예요. <b>10월 피</b>로 10월 청단을 가져와요.'},
+ {id:'go2',t:'go',title:'고? 스톱?',info:'3인 · 지금 내가 4점 (홍단 3점 + 피 1점) · 내 손에 2장 남음',mine:[1,5,9,2,3,6,7,10,11,14,15,18,19],opp:[{n:'할머니봇',cap:[0,8,13,17]},{n:'삼촌봇',cap:[22,23,26,27,30,31,34,35,38]}],q:'고 할까요, 스톱 할까요?',opts:['고','스톱'],ans:'스톱',
+  why:'할머니봇은 광 2장·초단 2장이라 <b>한 장만 더 먹어도 3점</b>. 삼촌봇도 피 9장이에요. 내 손엔 2장뿐이라 점수를 더 내기 어려워요. 고 했다가 남이 나면 <b>고박</b>으로 내가 다 물어줘요. <b>스톱</b>!'},
+ {id:'pay2',t:'pay',title:'돈 계산 (고)',info:'3인 · 점당 100원 · 고를 1번 하고 <b>6점</b>으로 났어요 · 박은 없어요',opp:[{n:'삼촌봇',note:'광 1장, 피 7장'}],q:'삼촌봇이 낼 돈은?',opts:['600원','700원','1,200원','1,400원'],ans:'700원',
+  why:'고 1번은 <b>+1점</b>. 6점 + 1점 = 7점 × 100원 = <b>700원</b>. 고 3번째부터는 점수가 2배씩 돼요.'},
+ {id:'bomb',t:'play',title:'폭탄',field:[27,10],hand:[24,25,26,6],q:'어떤 패를 낼까요?',ans:[24,25,26],
+  why:'손에 <b>7월이 3장</b>, 바닥에 7월이 1장! 7월을 내면 <b>폭탄</b>: 4장을 한 번에 먹고, 피 1장씩 받고, 이기면 2배예요. 대신 다음 두 번은 ‘넘기기’예요.'},
+ {id:'pay3',t:'pay',title:'돈 계산 (광박)',info:'3인 · 점당 100원 · <b>4점</b>으로 났어요 (광 3장 3점 + 띠 5장 1점)',opp:[{n:'할머니봇',note:'광 0장, 피 9장'}],q:'할머니봇이 낼 돈은?',opts:['400원','800원','1,200원','1,600원'],ans:'800원',
+  why:'광으로 점수를 냈는데 할머니봇은 광이 <b>하나도 없어요 → 광박 2배</b>. 4점 × 2 × 100원 = <b>800원</b>.'},
+];
+let DR=null;
+function drillNext(from){const n=PROBS.length;for(let k=1;k<=n;k++){const i=(from+k)%n;if(!PROG.drill.includes(PROBS[i].id))return i}return (from+1)%n}
+function renderDrill(){
+  if(!DR)DR={i:drillNext(-1),done:false};
+  const P=PROBS[DR.i],b=document.getElementById('drillBody');
+  const cs=(ids,w)=>ids.map(i=>cardSVG(DECK[i],w)).join('');
+  const TO={gwang:0,yeol:1,tti:2,pi:3},ks=ids=>ids.slice().sort((a,b)=>TO[DECK[a].t]-TO[DECK[b].t]||a-b);
+  const field=()=>{const g={};P.field.forEach(i=>(g[DECK[i].m]=g[DECK[i].m]||[]).push(i));return Object.values(g).map(ids=>ids.length>1?`<span class="dgrp">${cs(ids,46)}</span>`:cs(ids,46)).join('')};
+  const kindL={play:'뭘 낼까?',count:'점수 세기',go:'고? 스톱?',pay:'돈 계산'}[P.t];
+  b.innerHTML=`<div class="drill">
+    <div class="dtop"><b>${P.title}</b><span class="help">${kindL} · 맞힌 문제 ${PROG.drill.length}/${PROBS.length}</span></div>
+    <div class="dtable">
+      ${P.info?`<div class="dinfo">${P.info}</div>`:''}
+      ${(P.opp||[]).map(o=>`<div class="dopp"><div class="n">${o.n}${o.cap?' 먹은 패':''}</div>${o.cap?`<div class="drow">${cs(ks(o.cap),26)}</div>`:`<div style="font-size:13px">${o.note}</div>`}</div>`).join('')}
+      ${P.field?`<div><div class="dlbl">바닥</div><div class="drow c">${field()}</div></div>`:''}
+      ${P.mine?`<div><div class="dlbl">내가 먹은 패</div><div class="drow">${cs(ks(P.mine),P.t==='count'?36:26)}</div></div>`:''}
+      ${P.hand?`<div><div class="dlbl">내 손패${P.t==='play'?' · 눌러서 내기':''}</div><div class="drow c dhand">${P.hand.map(i=>`<button data-h="${i}">${cardSVG(DECK[i],58)}</button>`).join('')}</div></div>`:''}
+    </div>
+    <div class="dq">${P.q}</div>
+    ${P.opts?`<div class="opts">${P.opts.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>`:''}
+    <div id="dfb"></div>
+    <div class="minirow"><button data-go="home">그만하기</button><button id="dskip">${DR.done?'다음 문제 ›':'건너뛰기 ›'}</button></div>
+  </div>`;
+  const judge=(ok,el)=>{if(DR.done)return;DR.done=true;sfx(ok?'coin':'lose');
+    if(ok&&!PROG.drill.includes(P.id)){PROG.drill.push(P.id);saveProg()}
+    el.classList.add(ok?'ok':'no');
+    if(P.opts)b.querySelectorAll('[data-o]').forEach(x=>{if(x.dataset.o===P.ans)x.classList.add('ok')});
+    if(P.hand&&P.t==='play')b.querySelectorAll('[data-h]').forEach(x=>{if(P.ans.includes(+x.dataset.h))x.classList.add('ok')});
+    document.getElementById('dfb').innerHTML=`<div class="dwhy"><span class="r" style="color:${ok?'var(--green)':'var(--red)'}">${ok?'맞아요!':'아쉬워요'}</span>${P.why}${ok?'':'<br><span class="help">틀린 문제는 나중에 다시 나와요.</span>'}</div>`;
+    document.getElementById('dskip').textContent='다음 문제 ›';
+    document.querySelector('.drill .dtop .help').textContent=`${kindL} · 맞힌 문제 ${PROG.drill.length}/${PROBS.length}`;
+    document.getElementById('dfb').scrollIntoView({behavior:'smooth',block:'nearest'});
+  };
+  if(P.t==='play')b.querySelectorAll('[data-h]').forEach(x=>x.onclick=()=>{sfx('slap');judge(P.ans.includes(+x.dataset.h),x)});
+  else b.querySelectorAll('[data-h]').forEach(x=>x.disabled=true);
+  b.querySelectorAll('[data-o]').forEach(x=>x.onclick=()=>judge(x.dataset.o===P.ans,x));
+  document.getElementById('dskip').onclick=()=>{
+    if(PROG.drill.length>=PROBS.length&&!PROG.told.s4)return show('home');
+    DR={i:drillNext(DR.i),done:false};renderDrill();document.getElementById('drillBody').scrollTop=0};
 }
 
 // ───────────────────────── 도감 · 퀴즈 ─────────────────────────
@@ -474,7 +642,7 @@ function renderQuiz(){
 
 // ───────────────────────── 판 고르기 ─────────────────────────
 let SU={mode:3,ai:1,hints:true,endMode:'end'};
-function openSetup(h){SU.hints=h;document.getElementById('setupTitle').textContent=h?'도우미랑 한 판':'실전 한 판';renderSetup();show('setup')}
+function openSetup(h,master){SU.hints=h;if(master)SU.ai=2;document.getElementById('setupTitle').textContent=master?'명절 고수 도전':h?'도우미랑 한 판':'실전 한 판';renderSetup();show('setup')}
 function renderSetup(){
   const b=document.getElementById('setupBody');
   b.innerHTML=`
@@ -484,6 +652,7 @@ function renderSetup(){
     <div class="lbl">도우미</div><div class="seg" data-k="hints"><button data-v="1" class="${SU.hints?'on':''}">켜기</button><button data-v="0" class="${!SU.hints?'on':''}">끄기</button></div>
     <div class="lbl">컴퓨터 실력</div><div class="seg" data-k="ai">${['순한 맛','보통','명절 고수'].map((t,i)=>`<button data-v="${i}" class="${SU.ai===i?'on':''}">${t}</button>`).join('')}</div>
     <div class="lbl">돈을 다 잃으면</div><div class="seg" data-k="endMode"><button data-v="end" class="${SU.endMode==='end'?'on':''}">게임 끝</button><button data-v="refill" class="${SU.endMode==='refill'?'on':''}">용돈 받고 계속</button></div>
+    ${!SU.hints&&SU.ai===2?'<p class="help" style="color:var(--red)">🏆 도우미 끄고 명절 고수를 이기면 5단계(명절 고수 도전) 1판으로 세요.</p>':''}
     <p class="help">${SU.endMode==='end'?'누구든 돈이 0원이 되면 게임이 끝나고 순위를 발표해요.':`내 돈이 떨어지면 용돈 ${won(SET.start)}을 받아요. 하루 ${SET.refills}번까지 (오늘 ${Math.max(0,refillLeft())}번 남음).`}</p>
     <button class="big-btn" id="go" style="margin-top:6px">패 돌리기 · 각자 ${won(SET.start)}</button>
     <p class="help" style="text-align:center">점당 ${won(SET.jeom)} · 우리 집 규칙에서 바꿀 수 있어요</p>`;
@@ -990,7 +1159,7 @@ async function settle(w,opt){
   SESS.nagari=0;SESS.sun=w.i;
   if(w.isMe&&w.go)SESS.stats.goWins++;
   if(R.gobak&&R.gobak.isMe)SESS.stats.gobak++;
-  if(w.isMe){if(G.hints&&!G.hintOffUsed)PROG.helpWins++;else if(!SESS.hints)PROG.realWins++;saveProg()}
+  if(w.isMe){if(G.hints&&!G.hintOffUsed)PROG.helpWins++;else if(!SESS.hints){PROG.realWins++;if(SESS.ai===2&&!G.hints)PROG.masterWins++}saveProg()}
   saveSess();
   if(G.fast)return afterRound(w);
   // 실전: 퀴즈 먼저
