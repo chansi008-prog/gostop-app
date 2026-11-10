@@ -512,7 +512,7 @@ function renderRules(){
   const b=document.getElementById('rulesBody');
   b.innerHTML=`<div class="seg"><button id="rDef">보통 규칙으로</button></div><div class="set"><button class="r" id="rArt"><span class="t">보너스 피 그림<small>쌍피 2장 · 쓰리피 1장에 넣을 그림 고르기</small></span><span style="display:flex;gap:4px">${[48,49,50].map(i=>cardSVG(DECK[i],30,false)).join('')}</span></button></div><div class="set">${RULES.map(([k,t,d,opts,f])=>`
     <button class="r" data-k="${k}"><span class="t">${t}<small>${d}</small></span>${opts?`<span class="v">${f(SET[k])} ›</span>`:`<span class="tg ${SET[k]?'on':''}"></span>`}</button>`).join('')}</div>
-    <p class="help">첫뻑·연뻑 보너스는 다음 버전에서 넣을게요. 바꾼 규칙은 다음 판부터 적용돼요.</p>`;
+    <p class="help">첫 판에 싼 것·연달아 싼 것 보너스는 다음 버전에서 넣을게요. 바꾼 규칙은 다음 판부터 적용돼요.</p>`;
   b.querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>{const r=RULES.find(r=>r[0]===x.dataset.k);
     if(r[3]){const i=r[3].indexOf(SET[r[0]]);SET[r[0]]=r[3][(i+1)%r[3].length]}else SET[r[0]]=!SET[r[0]];saveSet();renderRules()});
   document.getElementById('rArt').onclick=pickBonusArt;
@@ -520,7 +520,7 @@ function renderRules(){
 }
 
 // ───────────────────────── 족보 · 용어 ─────────────────────────
-const TERMS=[['뻑','내가 낸 패로 바닥 패를 먹으려는데, 더미에서 같은 달이 또 나와 세 장이 바닥에 붙어 버린 것. 네 번째 장을 내는 사람이 다 가져가고 피도 1장씩 받아요.'],
+const TERMS=[['쌌다 (뻑)','내가 낸 패로 바닥 패를 먹으려는데, 더미에서 같은 달이 또 나와 세 장이 바닥에 붙어 버린 것. 네 번째 장을 내는 사람이 다 가져가고 피도 1장씩 받아요.'],
  ['쪽','바닥에 짝이 없어 그냥 낸 패를, 뒤집은 패가 바로 먹은 것. 피 1장씩.'],
  ['따닥','바닥에 같은 달 2장이 있을 때, 내 패와 뒤집은 패로 4장을 다 먹은 것. 피 1장씩.'],
  ['쓸','바닥을 싹 비운 것. 피 1장씩.'],
@@ -668,7 +668,7 @@ function hintFor(me){
   const trip=tripleMonths(me);
   const bombM=SET.bomb&&trip.find(m=>G.field.filter(x=>x.m===m).length===1);
   if(bombM)return {card:me.hand.find(x=>x.m===bombM),target:G.field.find(x=>x.m===bombM),text:`손에 <b>${bombM}월</b>이 3장, 바닥에 1장! 누르면 <b>폭탄</b>으로 4장을 한 번에 먹을 수 있어요.`};
-  if(b.fm.length===3)text=`바닥에 <b>${c.m}월</b>이 3장 붙어 있어요(뻑). <b>${eul(cname(c))}</b> 내면 4장을 다 가져오고 피도 1장씩 받아요!`;
+  if(b.fm.length===3)text=`바닥에 <b>${c.m}월</b>이 3장 붙어 있어요(쌌다). <b>${eul(cname(c))}</b> 내면 4장을 다 가져오고 피도 1장씩 받아요!`;
   else if(b.fm.length){const t=b.take[1];
     text=`바닥에 <b>${c.m}월</b>이 있어요. <b>${eul(cname(c))}</b> 내면 <b>${cname(t)}</b>까지 가져와요.`+progressNote(me,b.take);
     if(b.fm.length===2)text+=' 바닥에 같은 달이 2장이라 하나를 고르게 돼요.';
@@ -732,7 +732,7 @@ function steal(p,why){
     if(c){o.cap.splice(o.cap.indexOf(c),1);p.cap.push(c)}});
 }
 async function stage(p,cards,text,ms){if(G.fast)return;G.stage={who:p.name,cards,text};render();await wait(ms||(p.isMe?750:1200));G.stage=null}
-const EVN={bonus:'보너스!',bonusFlip:'보너스!',bbeok:'뻑!',jjok:'쪽!',ttadak:'따닥!',sseul:'쓸!',bbeokEat:'뻑 먹기!',bomb:'폭탄!',shake:'흔들기!'};
+const EVN={bonus:'보너스!',bonusFlip:'보너스!',bbeok:'쌌다!',jjok:'쪽!',ttadak:'따닥!',sseul:'쓸!',bbeokEat:'싼 거 먹기!',bomb:'폭탄!',shake:'흔들기!'};
 const EVT={bonus:()=>`보너스 피는 내자마자 내 것이 돼요. 더미에서 한 장을 가져와 손에 넣고, 한 번 더 내요.`,
   bonusFlip:()=>`더미에서 보너스 피가 나오면 바로 가져가고, 한 장 더 뒤집어요.`,
   bbeok:m=>`<b>${m}월</b> 세 장이 바닥에 붙었어요. 네 번째 ${m}월을 내는 사람이 다 가져가고, 다른 사람들에게서 피도 1장씩 받아요.`,
@@ -747,7 +747,7 @@ async function announce(p,ev,m){
   if(!SESS.stats.seen.includes(ev))SESS.stats.seen.push(ev);
   const first=!PROG.seen[ev];
   if(G.hints&&first){PROG.seen[ev]=1;saveProg();
-    await modal(`<div class="big"><em>${EVN[ev]}</em></div><div style="text-align:center;font-weight:700">${p.isMe?'내가':p.name+'이'} ${ev.startsWith('bonus')?'가져갔어요':'만들었어요'}</div><div class="sub">${EVT[ev](m)}</div><div class="mbtns"><button class="big-btn dark" data-v="ok">알았어요</button></div>`);
+    await modal(`<div class="big"><em>${EVN[ev]}</em></div><div style="text-align:center;font-weight:700">${p.isMe?'내가':p.name+'이'} ${ev.startsWith('bonus')?'가져갔어요':ev==='bbeok'?'쌌어요':'만들었어요'}</div><div class="sub">${EVT[ev](m)}</div><div class="mbtns"><button class="big-btn dark" data-v="ok">알았어요</button></div>`);
   }else{toast(`${p.isMe?'':p.name+' '}${EVN[ev]}`,1500);await wait(1100)}
 }
 async function doTurn(p,act){
