@@ -213,6 +213,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
 .mine .grp{display:flex;flex:none}
 .mine .grp > *{margin-right:-12px}
 .mine .grp > *:last-child{margin-right:0}
+.mine .grp > i{font-style:normal;font-size:12px;font-weight:700;color:#ffd76a;margin:0 0 0 14px;align-self:flex-end;line-height:1}
 .mine .empty{font-size:11.5px;opacity:.6}
 .hand{display:flex;justify-content:center;flex-wrap:nowrap;padding:12px 0 6px;gap:3px;min-height:90px;align-items:flex-end}
 .hand button{transition:transform .15s}
@@ -845,7 +846,7 @@ function render(){
     <div class="myline"><span>${me.i===G.sun?'<span class="badge" style="background:#55504a">선</span> ':''}나 · <b>${sc.total}점</b>${me.go?` · ${me.go}고`:''}${me.mult>1?` · ×${me.mult}`:''} <span style="opacity:.7">(${T}점 나면 고/스톱)</span></span><span><span class="coin"></span>${won(SESS.money[0])}</span></div>
     ${G.hints?`<div class="meters">${meter('광',sc.gn,3,'#e3b23c',sc.gn===2)}${meter('열끗',sc.yn,5,'#58b07c',sc.yn===4)}${meter('띠',sc.tn,5,'#e2574a',sc.tn===4)}${meter('피',sc.pv,10,'#cfc8b8',sc.pv>=8&&sc.pv<10)}${extra.slice(0,2).join('')}</div>`:''}
     ${hint?`<div class="tip">💡 ${hint.text}</div>`:''}
-    <button class="mine" id="mine">${me.cap.length?capGroups.filter(g=>g[1].length).map(([n,cs])=>`<span class="grp" title="${n}">${cs.map(c=>cardSVG(c,24,false)).join('')}</span>`).join(''):'<span class="empty">먹은 패가 여기 모여요</span>'}</button>
+    <button class="mine" id="mine">${me.cap.length?capGroups.filter(g=>g[1].length).map(([n,cs])=>`<span class="grp" title="${n}">${cs.map(c=>cardSVG(c,24,false)).join('')}<i>${n==='피'?piCount(me.cap):cs.length}</i></span>`).join(''):'<span class="empty">먹은 패가 여기 모여요</span>'}</button>
     ${me.dead?`<div class="watch">이번 판은 쉬면서 구경해요 👀</div>`:`<div class="hand ${myTurn?'':'wait'}">${me.hand.map(c=>{const isRec=hint&&hint.card===c,isM=matchM.has(c.m);
       return `<button data-card="${c.id}" class="${isRec?'rec glow':(G.hints&&myTurn&&isM?'match':'')}" ${myTurn?'':'disabled'} aria-label="${cname(c)}">${cardSVG(c,hw)}</button>`}).join('')}
       ${Array.from({length:me.dummy},()=>`<button data-dummy="1" ${myTurn?'':'disabled'} aria-label="넘기기">${backSVG(hw,'넘기기')}</button>`).join('')}</div>`}`;
