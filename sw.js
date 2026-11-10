@@ -1,5 +1,5 @@
 // 고스톱 교실 서비스 워커: 앱·화투 그림을 저장해 두어 인터넷 없이도 열리게 한다
-const VERSION = "gostop-v7";
+const VERSION = "gostop-v8";
 const ANIMALS = ["mouse","cow","tiger","rabbit","dragon","snake","horse","sheep","monkey","rooster","dog","pig","bengal","fox","bear","panda","chick","frog","koala","hamster","penguin","lion","soccer","helmet"];
 const CORE = ["./", "index.html", "manifest.webmanifest",
   ...Array.from({length: 48}, (_, i) => `cards/${i}.png`),
@@ -28,8 +28,10 @@ self.addEventListener("fetch", e => {
   }
   e.respondWith(caches.open(VERSION).then(async c => {
     const hit = await c.match(e.request);
-    const net = fetch(e.request).then(r => { if (r.ok || r.type === "opaque") c.put(e.request, r.clone()); return r; });
+    const img = /\/(cards|animals|icons)\//.test(url.pathname);
+    if (hit && img) return hit;  // 그림은 바뀌지 않으니 저장본만 쓴다
+    const net = fetch(e.request).then(r => { if (r.ok) c.put(e.request, r.clone()); return r; });
     if (hit) { e.waitUntil(net.catch(() => {})); return hit; }
-    return net;
+    return net.catch(async () => (img && await c.match(url.pathname.replace(/^.*\/(cards|animals|icons)\//, "$1/").split("?")[0])) || Response.error());
   }));
 });
