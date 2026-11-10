@@ -31,7 +31,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
 .screen{position:fixed;inset:0;display:none;flex-direction:column;
   padding:env(safe-area-inset-top,0px) max(0px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(0px,env(safe-area-inset-left,0px))}
 .screen.on{display:flex}
-.page{flex:1;overflow-y:auto;padding:16px max(16px,env(safe-area-inset-left,0px)) 28px max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px;max-width:620px;width:100%;margin:0 auto}
+.page{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:16px max(16px,env(safe-area-inset-left,0px)) 28px max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px;max-width:620px;width:100%;margin:0 auto}
 .topbar{display:flex;align-items:center;gap:10px;padding:10px 14px 4px;max-width:620px;width:100%;margin:0 auto}
 .topbar h2{font-size:24px;flex:1}
 .back{width:36px;height:36px;border-radius:50%;background:var(--chip);font-size:18px;display:grid;place-items:center}
@@ -97,6 +97,7 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
 .help{color:var(--muted);font-size:12.5px}
 
 /* 규칙 설정 */
+.page>*{flex-shrink:0}
 .set{background:var(--paper);border-radius:14px;border:1px solid var(--line);overflow:hidden}
 .set .r{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #f1ead9;width:100%;text-align:left}
 .set .r:last-child{border-bottom:0}

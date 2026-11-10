@@ -1,5 +1,5 @@
 // 고스톱 교실 서비스 워커: 앱·화투 그림을 저장해 두어 인터넷 없이도 열리게 한다
-const VERSION = "gostop-v1";
+const VERSION = "gostop-v2";
 const ANIMALS = ["mouse","cow","tiger","rabbit","dragon","snake","horse","sheep","monkey","rooster","dog","pig","bengal","fox","bear","panda","chick","frog","koala","hamster","penguin","lion","soccer","helmet"];
 const CORE = ["./", "index.html", "manifest.webmanifest",
   ...Array.from({length: 48}, (_, i) => `cards/${i}.png`),
